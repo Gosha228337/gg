@@ -11,7 +11,12 @@ from time import time as timer
 img_back = "1gg.jpg" 
 img_hero1 = "gg1.png" 
 img_hero2 = "gg2.png" 
+img_ball = "gg3.jpg"
 
+font.init()
+font1 = font.Font(None, 80)
+win_gg1 = font1.render('blue is win', True, (0, 0, 0))
+win_gg2 = font1.render('red is win', True, (255, 255, 255))
 
 
 # класс-родитель для других спрайтов
@@ -49,19 +54,7 @@ class Player(GameSprite):
             self.rect.y -= self.speed
         if keys[K_s] and self.rect.x < win_height - 80:
             self.rect.y += self.speed
-  # метод "выстрел" (используем место игрока, чтобы создать там пулю)
-   
-# класс спрайта-врага   
-#class Enemy(GameSprite):
-#     движение врага
-#    def update(self):
-#        self.rect.y += self.speed
-#        global lost
-#         исчезает, если дойдет до края экрана
-#        if self.rect.y > win_height:
-#            self.rect.x = randint(80, win_width - 80)
-#            self.rect.y = 0
-#            lost = lost + 1
+
 
 # Создаем окошко
 win_width = 700
@@ -69,12 +62,15 @@ win_height = 500
 display.set_caption("Shooter")
 window = display.set_mode((win_width, win_height))
 background = transform.scale(image.load(img_back), (win_width, win_height))
-player1 = Player(img_hero1, 0,0, 10, 70, 10)
-player2 = Player(img_hero2, 690,0, 10, 70, 10)
+player1 = Player(img_hero1, 0,0, 10, 70, 20)
+player2 = Player(img_hero2, 690,0, 10, 70, 20)
+ball = GameSprite(img_ball, 15, 0, 40, 40, 10)
 # переменная "игра закончилась": как только там True, в основном цикле перестают работать спрайты
-
+speed_x = 10
+speed_y = 10
 # Основной цикл игры:
 run = True # флаг сбрасывается кнопкой закрытия окна
+finish = False
 while run:
     # событие нажатия на кнопку Закрыть
     for e in event.get():
@@ -82,12 +78,30 @@ while run:
             run = False
        
         # производим движения спрайтов
+    if not finish:
+        ball.rect.x += speed_x
+        ball.rect.y += speed_y
+        if ball.rect.y <0 or ball.rect.y >500-40:
+            speed_y *=-1 
     
-    window.blit(background, (0,0))
-    player1.update1()
-    player2.update()
-    player2.reset()
-    player1.reset()
-    display.update()
+        if sprite.collide_rect(ball, player1) or sprite.collide_rect(ball, player2): 
+            speed_x *=-1
+        
+        
+
+
+        window.blit(background, (0,0))
+        if ball.rect.x > 700-40:
+            window.blit(win_gg2, (200,100))
+            finish = True
+        if ball.rect.x <0:
+            window.blit(win_gg1, (200,100))
+            finish = True
+        player1.update1()
+        player2.update()
+        player1.reset()
+        player2.reset()
+        ball.reset()
+        display.update()
     # цикл срабатывает каждую 0.05 секунд
     time.delay(50)
